@@ -371,14 +371,16 @@ func (p *provider) HandlePOST(s connector.Scopes, samlResponse, inResponseTo str
 		}
 	}
 
-	switch {
-	case subject.NameID != nil:
-		if ident.UserID = subject.NameID.Value; ident.UserID == "" {
-			return ident, fmt.Errorf("element NameID does not contain a value")
-		}
-	default:
-		return ident, fmt.Errorf("subject does not contain an NameID element")
-	}
+	//<!-- 2022.07.13
+	// switch {
+	// case subject.NameID != nil:
+	// 	if ident.UserID = subject.NameID.Value; ident.UserID == "" {
+	// 		return ident, fmt.Errorf("element NameID does not contain a value")
+	// 	}
+	// default:
+	// 	return ident, fmt.Errorf("subject does not contain an NameID element")
+	// }
+	// 2022.07.13 -->
 
 	// After verifying the assertion, map data in the attribute statements to
 	// various user info.
@@ -391,6 +393,13 @@ func (p *provider) HandlePOST(s connector.Scopes, samlResponse, inResponseTo str
 	// configuration errors on the server side, where the SAML server doesn't
 	// send us the correct attributes.
 	p.logger.Infof("parsed and verified saml response attributes %s", attributes)
+
+	//<!-- 2022.07.13
+	if ident.UserID, _ = attributes.get(p.emailAttr); ident.UserID == "" {
+		return ident, fmt.Errorf("sec element NameID does not contain a value")
+	}
+	// 2022.07.13 -->
+
 
 	// Grab the email.
 	if ident.Email, _ = attributes.get(p.emailAttr); ident.Email == "" {
